@@ -1,0 +1,27 @@
+<!-- frontend/index.html -->
+<form id="formulario">
+  <input name="nombre" placeholder="Tu nombre" required />
+  <input name="edad" type="number" placeholder="Tu edad" required />
+  <input name="hobbies" placeholder="Tus hobbies" />
+  <input name="deporte" placeholder="Deporte favorito" />
+  <label>¿Te gusta leer?</label><select name="lee"><option>Sí</option><option>No</option></select>
+  <label>¿Ya comiste?</label><select name="comio"><option>Sí</option><option>No</option></select>
+  <label>¿Te lavaste los dientes?</label><select name="dientes"><option>Sí</option><option>No</option></select>
+  <label>¿Dormiste bien?</label><select name="dormido"><option>Sí</option><option>No</option></select>
+  <button type="submit">Generar video</button>
+</form>
+<video id="video" controls></video>
+
+<script>
+document.getElementById('formulario').onsubmit = async (e) => {
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(e.target));
+  const res = await fetch('http://localhost:3000/generar-video', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(data)
+  });
+  const { url } = await res.json();
+  document.getElementById('video').src = url;
+};
+</script>
