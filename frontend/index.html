@@ -1,27 +1,123 @@
-<!-- frontend/index.html -->
-<form id="formulario">
-  <input name="nombre" placeholder="Tu nombre" required />
-  <input name="edad" type="number" placeholder="Tu edad" required />
-  <input name="hobbies" placeholder="Tus hobbies" />
-  <input name="deporte" placeholder="Deporte favorito" />
-  <label>¿Te gusta leer?</label><select name="lee"><option>Sí</option><option>No</option></select>
-  <label>¿Ya comiste?</label><select name="comio"><option>Sí</option><option>No</option></select>
-  <label>¿Te lavaste los dientes?</label><select name="dientes"><option>Sí</option><option>No</option></select>
-  <label>¿Dormiste bien?</label><select name="dormido"><option>Sí</option><option>No</option></select>
-  <button type="submit">Generar video</button>
-</form>
-<video id="video" controls></video>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>MiniMigue - Tu Compañero Virtual</title>
+  <style>
+    body {
+      font-family: 'Comic Sans MS', sans-serif;
+      background-color: #f0f8ff;
+      padding: 20px;
+      text-align: center;
+    }
+    form {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      display: inline-block;
+      text-align: left;
+    }
+    label, input, select {
+      display: block;
+      margin-bottom: 10px;
+      width: 100%;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    #estado {
+      margin-top: 20px;
+      font-weight: bold;
+      color: #555;
+    }
+    video {
+      margin-top: 20px;
+      max-width: 100%;
+      border-radius: 12px;
+    }
+  </style>
+</head>
+<body>
 
-<script>
-document.getElementById('formulario').onsubmit = async (e) => {
-  e.preventDefault();
-  const data = Object.fromEntries(new FormData(e.target));
-  const res = await fetch('http://localhost:3000/generar-video', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify(data)
-  });
-  const { url } = await res.json();
-  document.getElementById('video').src = url;
-};
-</script>
+  <h1>👦 MiniMigue te quiere saludar</h1>
+
+  <form id="formulario">
+    <label>Tu nombre:</label>
+    <input name="nombre" required />
+
+    <label>Tu edad:</label>
+    <input name="edad" type="number" required />
+
+    <label>Tus hobbies:</label>
+    <input name="hobbies" />
+
+    <label>Deporte favorito:</label>
+    <input name="deporte" />
+
+    <label>¿Te gusta leer?</label>
+    <select name="lee"><option>Sí</option><option>No</option></select>
+
+    <label>¿Ya comiste?</label>
+    <select name="comio"><option>Sí</option><option>No</option></select>
+
+    <label>¿Te lavaste los dientes?</label>
+    <select name="dientes"><option>Sí</option><option>No</option></select>
+
+    <label>¿Dormiste bien?</label>
+    <select name="dormido"><option>Sí</option><option>No</option></select>
+
+    <button type="submit">🎬 Generar video</button>
+  </form>
+
+  <p id="estado" style="display:none;">🎬 Generando video, por favor espera...</p>
+  <video id="video" controls autoplay style="display:none;"></video>
+
+  <script>
+    document.getElementById('formulario').onsubmit = async (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(e.target));
+
+      const estado = document.getElementById('estado');
+      const video = document.getElementById('video');
+
+      estado.style.display = 'block';
+      video.style.display = 'none';
+
+      try {
+        const res = await fetch('http://localhost:3000/generar-video', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`);
+
+        const { url } = await res.json();
+
+        if (url) {
+          video.src = url;
+          video.style.display = 'block';
+        } else {
+          alert('No se pudo generar el video. Intenta de nuevo.');
+        }
+      } catch (error) {
+        console.error('Error en frontend:', error);
+        if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+          alert('No se pudo conectar con el servidor. Asegúrate de que esté corriendo en http://localhost:3000');
+        } else {
+          alert('Hubo un problema al generar el video. Revisa consola para más detalles.');
+        }
+      } finally {
+        estado.style.display = 'none';
+      }
+    };
+  </script>
+
+</body>
+</html>

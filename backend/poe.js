@@ -1,7 +1,11 @@
-const fetch = require("node-fetch");
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 require("dotenv").config();
 
 async function generarGuion(datos) {
+  if (!datos || !datos.nombre || !datos.edad) {
+    throw new Error("Faltan datos obligatorios: nombre y edad.");
+  }
+
   const prompt = `Eres MiniMigue, un niño virtual de 8 años. Siempre comienza tus respuestas con este saludo:
 
 "¡Hola, amiguito! Soy MiniMigue, tu nuevo compañero virtual. Estoy muy feliz de conocerte. Me contaron que te llamas ${datos.nombre} y que tienes ${datos.edad} años. ¡Qué emocionante!"
@@ -16,20 +20,31 @@ Deporte favorito: ${datos.deporte}
 
 Motiva al niño, háblale con cariño y termina con preguntas como “¿Qué vas a leer hoy?” o “¿Jugamos después?”. Usa lenguaje infantil, cálido y alegre. Sé breve, empático y divertido.`;
 
-  const response = await fetch("https://api.poe.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${process.env.POE_API_KEY}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      model: "MiniMigue",
-      messages: [{ role: "user", content: prompt }]
-    })
-  });
+  try {
+    const response = await fetch("https://api.poe.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.POE_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "MiniMigue", // Asegúrate que este modelo exista en tu cuenta Poe
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
 
-  const json = await response.json();
-  return json.choices[0].message.content;
+    const json = await response.json();
+
+    if (!response.ok || !json.choices || !json.choices[0]?.message?.content) {
+      console.error("Respuesta inválida de Poe:", json);
+      throw new Error("No se pudo generar el guion.");
+    }
+
+    return json.choices[0].message.content;
+  } catch (error) {
+    console.error("❌ Error al conectar con Poe:", error.message);
+    throw new Error("Error al generar el guion desde Poe.");
+  }
 }
 
 module.exports = { generarGuion };
