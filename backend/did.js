@@ -13,9 +13,24 @@ async function generarVideo(texto) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        script: { type: 'text', input: texto, subtitles: false },
-        config: { fluent: true, pad_audio: 0.5 },
-        source_url: 'https://create-images-results.d-id.com/DefaultPresenters/Emma_f/image.png'
+        script: {
+          type: 'text',
+          input: texto,
+          subtitles: false,
+          provider: {
+            type: 'microsoft',
+            voice_id: 'es-MX-DaliaNeural',
+            voice_config: {
+              style: 'Cheerful'
+            }
+          }
+        },
+        config: {
+          fluent: true,
+          pad_audio: 0.5,
+          stitch: true
+        },
+        source_url: 'https://st2.depositphotos.com/1003713/7802/i/450/depositphotos_78029210-stock-photo-little-boy-in-blue-shirt.jpg'
       })
     });
 
